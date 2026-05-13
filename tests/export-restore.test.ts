@@ -11,9 +11,20 @@ async function createFixtureCodexHome(root: string) {
   await mkdir(path.join(codexHome, "sessions", "2026"), { recursive: true });
   await mkdir(path.join(codexHome, "memories"), { recursive: true });
   await mkdir(path.join(codexHome, "plugins", "cache"), { recursive: true });
+  await mkdir(path.join(codexHome, "rules"), { recursive: true });
+  await mkdir(path.join(codexHome, "cache", "codex_apps_tools"), { recursive: true });
+  await mkdir(path.join(codexHome, "shell_snapshots"), { recursive: true });
+  await mkdir(path.join(codexHome, "vendor_imports", "skills"), { recursive: true });
   await writeFile(path.join(codexHome, "config.toml"), "model = \"gpt\"\n");
+  await writeFile(path.join(codexHome, ".codex-global-state.json"), "{}\n");
+  await writeFile(path.join(codexHome, "models_cache.json"), "[]\n");
+  await writeFile(path.join(codexHome, "session_index.jsonl"), "{}\n");
   await writeFile(path.join(codexHome, "memories", "MEMORY.md"), "public fixture memory\n");
   await writeFile(path.join(codexHome, "sessions", "2026", "rollout.jsonl"), "{}\n");
+  await writeFile(path.join(codexHome, "rules", "default.rules"), "rule\n");
+  await writeFile(path.join(codexHome, "cache", "codex_apps_tools", "tool.json"), "{}\n");
+  await writeFile(path.join(codexHome, "shell_snapshots", "thread.sh"), "echo fixture\n");
+  await writeFile(path.join(codexHome, "vendor_imports", "skills", "skill.json"), "{}\n");
   await writeFile(path.join(codexHome, "state_5.sqlite"), "sqlite-state");
   await writeFile(path.join(codexHome, "logs_2.sqlite"), "sqlite-logs");
   await writeFile(path.join(codexHome, "auth.json"), "secret");
@@ -40,6 +51,10 @@ test("exports standard payload and restores it across OS profiles without secret
     assert.equal(manifest.files.some((file: { logicalPath: string }) => file.logicalPath === "logs_2.sqlite"), false);
     assert.equal(manifest.files.some((file: { logicalPath: string }) => file.logicalPath === "auth.json"), false);
     assert.equal(manifest.files.some((file: { logicalPath: string }) => file.logicalPath === ".env"), false);
+    assert.equal(manifest.files.some((file: { logicalPath: string }) => file.logicalPath === "session_index.jsonl"), true);
+    assert.equal(manifest.files.some((file: { logicalPath: string }) => file.logicalPath === ".codex-global-state.json"), true);
+    assert.equal(manifest.files.some((file: { logicalPath: string }) => file.logicalPath === "rules/default.rules"), true);
+    assert.equal(manifest.files.some((file: { logicalPath: string }) => file.logicalPath === "cache/codex_apps_tools/tool.json"), true);
 
     const targetHome = path.join(root, "target", ".codex");
     await restoreCodexHome({
@@ -49,6 +64,9 @@ test("exports standard payload and restores it across OS profiles without secret
     });
 
     assert.equal(await readFile(path.join(targetHome, "config.toml"), "utf8"), "model = \"gpt\"\n");
+    assert.equal(await readFile(path.join(targetHome, "session_index.jsonl"), "utf8"), "{}\n");
+    assert.equal(await readFile(path.join(targetHome, "rules", "default.rules"), "utf8"), "rule\n");
+    assert.equal(await readFile(path.join(targetHome, "shell_snapshots", "thread.sh"), "utf8"), "echo fixture\n");
     assert.equal(await readFile(path.join(targetHome, "state_5.sqlite"), "utf8"), "sqlite-state");
     await assert.rejects(readFile(path.join(targetHome, "logs_2.sqlite"), "utf8"));
     await assert.rejects(readFile(path.join(targetHome, "auth.json"), "utf8"));

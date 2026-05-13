@@ -68,7 +68,7 @@ Avoid Git, Git LFS, public file hosts, issue uploads, and email attachments for 
 
 ## What Is Migrated
 
-The `standard` profile includes Codex configuration, memories, skills, plugin/cache data, sessions, archived sessions, automations, and `state_*.sqlite`.
+The `standard` profile includes Codex configuration, global state JSON, model cache JSON, session index JSONL, rules, memories, skills, plugin/cache data, sessions, archived sessions, shell snapshots, vendor imports, automations, and `state_*.sqlite`.
 
 The `full` profile includes everything in `standard` plus `logs_*.sqlite`.
 

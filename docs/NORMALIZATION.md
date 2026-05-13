@@ -22,6 +22,8 @@ Paths are stored relative to Codex home:
 
 ```text
 sessions/2026/example.jsonl
+session_index.jsonl
+.codex-global-state.json
 memories/MEMORY.md
 state_5.sqlite
 ```

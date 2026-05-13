@@ -3,6 +3,19 @@ import type { PathClass } from "./types.ts";
 import { toPortablePath } from "./path-profiles.ts";
 
 const exactForbidden = new Set(["auth.json", "cap_sid", "installation_id"]);
+const standardFiles = new Set(["config.toml", ".codex-global-state.json", "models_cache.json", "session_index.jsonl"]);
+const standardDirs = [
+  "automations/",
+  "cache/",
+  "memories/",
+  "plugins/",
+  "rules/",
+  "sessions/",
+  "archived_sessions/",
+  "shell_snapshots/",
+  "skills/",
+  "vendor_imports/",
+];
 const keyFilePattern = /(^|\/)(id_rsa|id_dsa|id_ecdsa|id_ed25519|.*\.pem|.*\.key)$/i;
 const tokenPattern = /(^|\/).*(token|secret|credential|password).*$/i;
 
@@ -26,12 +39,7 @@ export function classifyPath(filePath: string): PathClass {
   if (shouldExcludePath(logical)) return "excluded";
   if (/^logs_\d+\.sqlite$/i.test(base)) return "full";
   if (/^state_\d+\.sqlite$/i.test(base)) return "standard";
-  if (base === "config.toml") return "standard";
-  if (logical.startsWith("memories/")) return "standard";
-  if (logical.startsWith("skills/")) return "standard";
-  if (logical.startsWith("plugins/")) return "standard";
-  if (logical.startsWith("sessions/")) return "standard";
-  if (logical.startsWith("archived_sessions/")) return "standard";
-  if (logical.startsWith("automations/")) return "standard";
+  if (standardFiles.has(logical)) return "standard";
+  if (standardDirs.some((dir) => logical.startsWith(dir))) return "standard";
   return "excluded";
 }

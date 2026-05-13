@@ -17,3 +17,5 @@ Codex Migration Kit uses a ZIP overlay model:
 This avoids pushing private state through Git or Git LFS. If GitHub uploads or LFS stalls, the payload can still move through a private file-transfer channel.
 
 See [Local Transfer](LOCAL_TRANSFER.md) for the recommended computer-to-computer handoff.
+
+The standard payload keeps Codex thread/session continuity by including session JSONL files, archived sessions, `session_index.jsonl`, `.codex-global-state.json`, and `state_*.sqlite` while still excluding auth files and SQLite sidecars.
