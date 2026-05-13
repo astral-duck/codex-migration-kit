@@ -1,0 +1,17 @@
+{
+  "name": "codex-migration-kit",
+  "version": "0.1.0",
+  "description": "Unofficial Codex-only migration kit for moving local Codex state between Windows and macOS.",
+  "type": "module",
+  "bin": {
+    "codex-migrate": "./bin/codex-migrate.js"
+  },
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.ts\"",
+    "check:personal-data": "node scripts/check-personal-data.mjs"
+  },
+  "engines": {
+    "node": ">=22.6"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,9 @@
+node_modules/
+coverage/
+dist/
+*.log
+codex-migration-payload/
+codex-migration-payload.zip
+payload/
+*.backup-*
+.DS_Store
