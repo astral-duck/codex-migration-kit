@@ -4,9 +4,11 @@ export type PathClass = "standard" | "full" | "excluded";
 
 export type ManifestFile = {
   logicalPath: string;
+  restorePath?: string;
   checksum: string;
   size: number;
   chunks: string[];
+  transforms?: string[];
 };
 
 export type Manifest = {
@@ -16,6 +18,12 @@ export type Manifest = {
   sourceOs: OsProfile;
   targetOs: OsProfile;
   profile: PayloadProfile;
+  summary: {
+    includedFiles: number;
+    excludedFiles: number;
+    totalBytes: number;
+    transferModel: "local-zip-overlay";
+  };
   files: ManifestFile[];
   excluded: string[];
   notes: string[];

@@ -4,7 +4,19 @@ The safest transfer model is local export plus private file movement. Do not pus
 
 ## Recommended Flow
 
-1. On the source machine, run:
+1. On the source machine, run preflight:
+
+   ```bash
+   npx codex-migration-kit preflight --target macos --profile standard
+   ```
+
+   or:
+
+   ```bash
+   npx codex-migration-kit preflight --target windows --profile standard
+   ```
+
+2. Export the payload:
 
    ```bash
    npx codex-migration-kit export --target macos --profile standard
@@ -16,17 +28,18 @@ The safest transfer model is local export plus private file movement. Do not pus
    npx codex-migration-kit export --target windows --profile standard
    ```
 
-2. Confirm the generated ZIP exists:
+3. Confirm the generated ZIP exists:
 
    ```bash
    npx codex-migration-kit validate --payload ./codex-migration-payload.zip
    ```
 
-3. Move `codex-migration-payload.zip` directly to the target machine.
-4. On the target machine, run:
+4. Move `codex-migration-payload.zip` directly to the target machine.
+5. On the target machine, run:
 
    ```bash
    npx codex-migration-kit validate --payload ./codex-migration-payload.zip
+   npx codex-migration-kit restore --payload ./codex-migration-payload.zip --dry-run
    npx codex-migration-kit restore --payload ./codex-migration-payload.zip
    codex --login
    ```

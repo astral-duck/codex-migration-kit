@@ -20,7 +20,9 @@ export async function validatePayload(payloadRoot: string): Promise<ValidationRe
 
   try {
     for (const file of manifest.files) {
-      if (shouldExcludePath(file.logicalPath) || classifyPath(file.logicalPath) === "excluded") {
+      const restorePath = file.restorePath ?? file.logicalPath;
+      const transformedLogCopy = file.transforms?.includes("sqlite-vacuum-copy") && classifyPath(restorePath) === "full";
+      if (!transformedLogCopy && (shouldExcludePath(file.logicalPath) || classifyPath(file.logicalPath) === "excluded")) {
         errors.push(`Forbidden file included in manifest: ${file.logicalPath}`);
         continue;
       }

@@ -1,6 +1,6 @@
 import { mkdir, readFile, rm } from "node:fs/promises";
 import path from "node:path";
-import { copyFileEnsuringDir, moveToBackupIfExists } from "./fs-utils.ts";
+import { copyFileEnsuringDir, moveToBackupIfExists, pathExists } from "./fs-utils.ts";
 import { fromPortablePath } from "./path-profiles.ts";
 import { reassembleChunkedFile, verifyFileChecksum } from "./payload.ts";
 import { validatePayload } from "./validate.ts";
@@ -10,11 +10,14 @@ export type RestoreOptions = {
   payloadRoot: string;
   targetOs: OsProfile;
   targetCodexHome: string;
+  dryRun?: boolean;
 };
 
 export type RestoreResult = {
   restoredFiles: number;
   backupDir?: string;
+  dryRun?: boolean;
+  wouldBackup?: boolean;
 };
 
 export async function restoreCodexHome(options: RestoreOptions): Promise<RestoreResult> {
@@ -24,6 +27,13 @@ export async function restoreCodexHome(options: RestoreOptions): Promise<Restore
   if (!validation.ok) {
     throw new Error(validation.errors.join("\n"));
   }
+  if (options.dryRun) {
+    return {
+      restoredFiles: manifest.files.length,
+      dryRun: true,
+      wouldBackup: await pathExists(options.targetCodexHome),
+    };
+  }
   const backupDir = await moveToBackupIfExists(options.targetCodexHome);
   await mkdir(options.targetCodexHome, { recursive: true });
 
@@ -32,7 +42,7 @@ export async function restoreCodexHome(options: RestoreOptions): Promise<Restore
     const tempTarget = path.join(options.targetCodexHome, ".restore-tmp", ...file.logicalPath.split("/"));
     await reassembleChunkedFile(chunkDir, tempTarget);
     await verifyFileChecksum(tempTarget, file.checksum);
-    await copyFileEnsuringDir(tempTarget, fromPortablePath(options.targetCodexHome, file.logicalPath));
+    await copyFileEnsuringDir(tempTarget, fromPortablePath(options.targetCodexHome, file.restorePath ?? file.logicalPath));
   }
 
   await rm(path.join(options.targetCodexHome, ".restore-tmp"), { recursive: true, force: true });

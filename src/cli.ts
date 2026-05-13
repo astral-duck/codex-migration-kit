@@ -3,6 +3,7 @@ import path from "node:path";
 import { createPayloadZip, materializePayload } from "./archive.ts";
 import { exportCodexHome } from "./exporter.ts";
 import { defaultCodexHome, defaultHome, currentOsProfile } from "./path-profiles.ts";
+import { runPreflight } from "./preflight.ts";
 import { restoreCodexHome } from "./restore.ts";
 import { validatePayload } from "./validate.ts";
 import type { OsProfile, PayloadProfile } from "./types.ts";
@@ -20,6 +21,9 @@ export async function main(argv: string[]): Promise<void> {
       break;
     case "export":
       await runExport(parsed);
+      break;
+    case "preflight":
+      await preflight(parsed);
       break;
     case "restore":
       await runRestore(parsed);
@@ -59,6 +63,15 @@ async function inspect(parsed: ParsedArgs): Promise<void> {
   console.log(JSON.stringify({ os, codexHome, authExcluded: true }, null, 2));
 }
 
+async function preflight(parsed: ParsedArgs): Promise<void> {
+  const sourceOs = currentOsProfile();
+  const targetOs = requiredOs(parsed.values.target, "--target must be windows or macos");
+  const profile = getProfile(parsed.values.profile) ?? "standard";
+  const codexHome = String(parsed.values["codex-home"] ?? defaultCodexHome(sourceOs));
+  const result = await runPreflight({ sourceOs, targetOs, codexHome, profile });
+  console.log(JSON.stringify(result, null, 2));
+}
+
 async function runExport(parsed: ParsedArgs): Promise<void> {
   const sourceOs = currentOsProfile();
   const targetOs = requiredOs(parsed.values.target, "--target must be windows or macos");
@@ -86,7 +99,17 @@ async function runRestore(parsed: ParsedArgs): Promise<void> {
   if (!payloadRoot) throw new Error("--payload is required");
   const materializedPayload = await materializePayload(payloadRoot);
   const targetCodexHome = String(parsed.values["codex-home"] ?? defaultCodexHome(targetOs, defaultHome(targetOs)));
-  const result = await restoreCodexHome({ payloadRoot: materializedPayload, targetOs, targetCodexHome });
+  const result = await restoreCodexHome({
+    payloadRoot: materializedPayload,
+    targetOs,
+    targetCodexHome,
+    dryRun: parsed.values["dry-run"] === true,
+  });
+  if (result.dryRun) {
+    console.log(`Dry run: would restore ${result.restoredFiles} files to ${targetCodexHome}`);
+    if (result.wouldBackup) console.log("Dry run: existing Codex state would be backed up before restore.");
+    return;
+  }
   console.log(`Restored ${result.restoredFiles} files to ${targetCodexHome}`);
   if (result.backupDir) console.log(`Existing Codex state was backed up to ${result.backupDir}`);
   console.log("Run codex --login on this machine before using Codex.");
@@ -117,8 +140,9 @@ function usage(): void {
   console.log([
     "Usage:",
     "  codex-migrate inspect [--os windows|macos] [--codex-home PATH]",
+    "  codex-migrate preflight --target windows|macos [--profile standard|full] [--codex-home PATH]",
     "  codex-migrate export --target windows|macos [--profile standard|full] [--codex-home PATH] [--output DIR]",
-    "  codex-migrate restore --payload DIR_OR_ZIP [--codex-home PATH]",
+    "  codex-migrate restore --payload DIR_OR_ZIP [--codex-home PATH] [--dry-run]",
     "  codex-migrate validate --payload DIR_OR_ZIP",
     "  codex-migrate doctor",
   ].join("\n"));

@@ -19,3 +19,5 @@ This avoids pushing private state through Git or Git LFS. If GitHub uploads or L
 See [Local Transfer](LOCAL_TRANSFER.md) for the recommended computer-to-computer handoff.
 
 The standard payload keeps Codex thread/session continuity by including session JSONL files, archived sessions, `session_index.jsonl`, `.codex-global-state.json`, and `state_*.sqlite` while still excluding auth files and SQLite sidecars.
+
+Before restore, `validate` reassembles chunked files in a temporary directory and verifies checksums. `restore --dry-run` uses the same validation path and reports whether an existing target Codex home would be backed up.

@@ -25,6 +25,12 @@ Inspect the source machine:
 npx codex-migration-kit inspect
 ```
 
+Run preflight before export:
+
+```bash
+npx codex-migration-kit preflight --target macos --profile standard
+```
+
 Export a standard Codex payload:
 
 ```bash
@@ -34,11 +40,13 @@ npx codex-migration-kit export --target macos --profile standard
 Move `codex-migration-payload.zip` privately to the target machine, then restore:
 
 ```bash
+npx codex-migration-kit validate --payload ./codex-migration-payload.zip
+npx codex-migration-kit restore --payload ./codex-migration-payload.zip --dry-run
 npx codex-migration-kit restore --payload ./codex-migration-payload.zip
 codex --login
 ```
 
-Use `--profile full` only when you want large Codex log databases included.
+Use `--profile full` only when you want large Codex log databases included. Full-profile log files are staged as transformed copies before packaging so restore can keep the original `logs_*.sqlite` target name.
 
 ## Running From A Git Clone
 
@@ -48,6 +56,7 @@ Before this package is published to npm, clone the public repo and run the CLI d
 git clone <repo-url>
 cd codex-migration-kit
 node bin/codex-migrate.js inspect
+node bin/codex-migrate.js preflight --target macos --profile standard
 node bin/codex-migrate.js export --target macos --profile standard
 ```
 
@@ -87,3 +96,7 @@ for common failure explanations.
 ## Agentic Development
 
 Agents working in this repo should read [AGENTS.md](AGENTS.md) before making changes. The most important rule is that privacy protections are part of the product contract: restore must validate before mutation, auth must stay excluded, and generated payloads must never be committed.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Every behavior change should include tests and should preserve the private ZIP transfer model.

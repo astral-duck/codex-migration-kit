@@ -48,6 +48,9 @@ test("exports standard payload and restores it across OS profiles without secret
 
     const manifest = JSON.parse(await readFile(path.join(payloadRoot, "payload", "manifest.json"), "utf8"));
     assert.equal(manifest.profile, "standard");
+    assert.equal(manifest.summary.includedFiles, manifest.files.length);
+    assert.equal(manifest.summary.excludedFiles, manifest.excluded.length);
+    assert.equal(manifest.summary.transferModel, "local-zip-overlay");
     assert.equal(manifest.files.some((file: { logicalPath: string }) => file.logicalPath === "logs_2.sqlite"), false);
     assert.equal(manifest.files.some((file: { logicalPath: string }) => file.logicalPath === "auth.json"), false);
     assert.equal(manifest.files.some((file: { logicalPath: string }) => file.logicalPath === ".env"), false);
@@ -91,7 +94,8 @@ test("exports full payload with logs and restores macOS to Windows fixture with 
 
     const manifest = JSON.parse(await readFile(path.join(payloadRoot, "payload", "manifest.json"), "utf8"));
     assert.equal(manifest.profile, "full");
-    assert.equal(manifest.files.some((file: { logicalPath: string }) => file.logicalPath === "logs_2.sqlite"), true);
+    assert.equal(manifest.files.some((file: { logicalPath: string }) => file.logicalPath === "logs_2.sqlite"), false);
+    assert.equal(manifest.files.some((file: { logicalPath: string; transforms?: string[] }) => file.logicalPath === "logs_2.sqlite.copy" && file.transforms?.includes("sqlite-vacuum-copy")), true);
 
     const targetHome = path.join(root, "target", ".codex");
     await mkdir(targetHome, { recursive: true });
@@ -105,6 +109,40 @@ test("exports full payload with logs and restores macOS to Windows fixture with 
     assert.match(result.backupDir, /\.backup-/);
     assert.equal(await readFile(path.join(targetHome, "logs_2.sqlite"), "utf8"), "sqlite-logs");
     assert.equal(await readFile(path.join(targetHome, "config.toml"), "utf8"), "model = \"gpt\"\n");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("restore dry run previews backup and file count without changing target state", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "codex-dry-run-"));
+  try {
+    const sourceHome = await createFixtureCodexHome(path.join(root, "source"));
+    const payloadRoot = path.join(root, "payload");
+    await exportCodexHome({
+      sourceOs: "windows",
+      targetOs: "macos",
+      sourceCodexHome: sourceHome,
+      outputDir: payloadRoot,
+      profile: "standard",
+      chunkSizeBytes: 8,
+    });
+
+    const targetHome = path.join(root, "target", ".codex");
+    await mkdir(targetHome, { recursive: true });
+    await writeFile(path.join(targetHome, "config.toml"), "old = true\n");
+
+    const result = await restoreCodexHome({
+      payloadRoot,
+      targetOs: "macos",
+      targetCodexHome: targetHome,
+      dryRun: true,
+    });
+
+    assert.equal(result.dryRun, true);
+    assert.equal(result.wouldBackup, true);
+    assert.equal(result.restoredFiles > 0, true);
+    assert.equal(await readFile(path.join(targetHome, "config.toml"), "utf8"), "old = true\n");
   } finally {
     await rm(root, { recursive: true, force: true });
   }

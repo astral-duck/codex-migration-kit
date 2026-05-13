@@ -54,3 +54,9 @@ node bin/codex-migrate.js doctor
 - Update `SECURITY.md` when exclusion rules change.
 - Update `docs/TRANSFER_MODEL.md` and `docs/LOCAL_TRANSFER.md` when payload movement changes.
 - Keep prompts generic and free of user-specific names, repo names, or local paths.
+
+## Release Readiness
+
+- CI must pass on macOS, Windows, and Linux.
+- A public release should include a tag, changelog entry, and package dry-run evidence.
+- Before claiming Windows support beyond fixture tests, run a real Windows export/restore smoke test.

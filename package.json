@@ -12,12 +12,14 @@
     "prompts",
     "src",
     "AGENTS.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
     "LICENSE",
     "README.md",
     "SECURITY.md"
   ],
   "scripts": {
-    "test": "node --test \"tests/**/*.test.ts\"",
+    "test": "node --test tests/*.test.ts",
     "check:personal-data": "node scripts/check-personal-data.mjs"
   },
   "engines": {
