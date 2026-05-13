@@ -5,8 +5,8 @@ const forbiddenTerms = [
   ["I", "F", "M"].join(""),
   ["align", "mint"].join(""),
   ["G", "S", "C"].join(""),
-  ["C:", "Users", "steve"].join("\\"),
-  ["", "Users", "steven"].join("/"),
+  ["C:", "Users", ["s", "t", "e", "v", "e"].join("")].join("\\"),
+  ["", "Users", ["s", "t", "e", "v", "e", "n"].join("")].join("/"),
 ];
 const ignoredDirs = new Set([".git", "node_modules"]);
 const root = process.cwd();

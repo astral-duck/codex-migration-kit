@@ -4,6 +4,8 @@ Codex Migration Kit is designed around a private payload model.
 
 The public repo contains only scripts, docs, tests, and examples. The generated payload is local to the user and should be moved through a private channel.
 
+Recommended transfer channels are USB/external drive, AirDrop where available, or a trusted private local network share. Do not push generated payloads to Git or Git LFS.
+
 ## Always Excluded
 
 - `auth.json`
