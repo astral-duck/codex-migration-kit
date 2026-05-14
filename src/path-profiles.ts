@@ -27,6 +27,13 @@ export function normalizeForManifest(os: OsProfile, filePath: string, codexHome?
     }
   }
   const root = codexHome ?? defaultCodexHome(os);
+  if (codexHome) {
+    const hostRelative = path.relative(root, filePath);
+    const portableHostRelative = toPortablePath(hostRelative);
+    if (portableHostRelative && portableHostRelative !== ".." && !portableHostRelative.startsWith("../") && !path.isAbsolute(hostRelative)) {
+      return portableHostRelative;
+    }
+  }
   const relative = pathApi.relative(root, filePath);
   return toPortablePath(relative);
 }
