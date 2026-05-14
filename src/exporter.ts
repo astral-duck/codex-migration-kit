@@ -84,11 +84,12 @@ async function stageSourceFile(sourcePath: string, logicalPath: string, pathClas
   transforms?: string[];
   cleanup?: () => Promise<void>;
 }> {
-  if (pathClass !== "full" || !/^logs_\d+\.sqlite$/i.test(path.basename(logicalPath))) {
+  const portableBase = path.posix.basename(toPortablePath(logicalPath));
+  if (pathClass !== "full" || !/^logs_\d+\.sqlite$/i.test(portableBase)) {
     return { sourcePath, logicalPath };
   }
 
-  const stagedPath = path.join(tmpdir(), `codex-migration-${path.basename(logicalPath)}-${process.pid}.copy`);
+  const stagedPath = path.join(tmpdir(), `codex-migration-${portableBase}-${process.pid}.copy`);
   await copyFile(sourcePath, stagedPath);
   return {
     sourcePath: stagedPath,
